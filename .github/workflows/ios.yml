@@ -37,3 +37,50 @@ jobs:
             -scheme Moozic \
             -destination "id=${{ steps.sim.outputs.udid }}" \
             CODE_SIGNING_ALLOWED=NO
+
+  # Push a tag like `v1.2.0` to publish a GitHub Release with an unsigned .ipa.
+  # iOS only installs signed apps: sideload it with AltStore/SideStore/Sideloadly,
+  # which re-sign it with your Apple ID.
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-and-test
+    runs-on: macos-15
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build unsigned Release app
+        run: |
+          xcodebuild build \
+            -quiet \
+            -project Moozic.xcodeproj \
+            -scheme Moozic \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            MARKETING_VERSION="${GITHUB_REF_NAME#v}" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package .ipa
+        run: |
+          mkdir Payload
+          cp -R build/Build/Products/Release-iphoneos/Moozic.app Payload/
+          zip -qry "Moozic-${GITHUB_REF_NAME}-unsigned.ipa" Payload
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "Moozic-${GITHUB_REF_NAME}-unsigned.ipa" \
+            --title "Moozic $GITHUB_REF_NAME" \
+            --generate-notes \
+            --notes "Unsigned build – install with AltStore, SideStore or Sideloadly, which re-sign it with your Apple ID."

@@ -33,6 +33,16 @@ xcodebuild test -project Moozic.xcodeproj -scheme Moozic -destination 'platform=
 
 CI (`.github/workflows/ios.yml`) does the same on every push.
 
+## Releases
+
+Push a version tag and CI builds a Release `.ipa` and publishes it as a GitHub Release (after the tests pass):
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+The version comes from the tag and the build number from the CI run. The `.ipa` is **unsigned**, because iOS only installs signed apps. To put it on a phone, sideload it with [AltStore](https://altstore.io), [SideStore](https://sidestore.io) or [Sideloadly](https://sideloadly.io), which re-sign it with your Apple ID. Builds signed with a free Apple ID expire after 7 days. Shipping signed builds (ad-hoc or TestFlight) needs a paid Apple Developer account and its signing credentials stored as repository secrets.
+
 ## Setting up sign-in (OIDC)
 
 The server docs cover this in [Building a mobile app](https://github.com/chrissssdotcom/moozic/blob/main/docs/api/mobile-clients.md). In short:
