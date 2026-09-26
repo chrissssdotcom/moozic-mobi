@@ -41,6 +41,8 @@ Push a version tag and CI builds a Release `.ipa` and publishes it as a GitHub R
 git tag v1.0.0 && git push origin v1.0.0
 ```
 
+Or run the **iOS** workflow manually from the Actions tab with a version such as `v1.0.1`. It tags the commit it built.
+
 The version comes from the tag and the build number from the CI run. The `.ipa` is **unsigned**, because iOS only installs signed apps. To put it on a phone, sideload it with [AltStore](https://altstore.io), [SideStore](https://sidestore.io) or [Sideloadly](https://sideloadly.io), which re-sign it with your Apple ID. Builds signed with a free Apple ID expire after 7 days. Shipping signed builds (ad-hoc or TestFlight) needs a paid Apple Developer account and its signing credentials stored as repository secrets.
 
 ## Setting up sign-in (OIDC)
