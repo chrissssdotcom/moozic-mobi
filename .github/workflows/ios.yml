@@ -88,9 +88,26 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Creates the tag on this commit when it doesn't exist yet (manual runs).
-          gh release create "$TAG" "Moozic-${TAG}-unsigned.ipa" \
-            --target "$GITHUB_SHA" \
-            --title "Moozic $TAG" \
-            --generate-notes \
-            --notes "Unsigned build – install with AltStore, SideStore or Sideloadly, which re-sign it with your Apple ID."
+          IPA="Moozic-${TAG}-unsigned.ipa"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            # Re-running a version replaces its build.
+            gh release upload "$TAG" "$IPA" --clobber
+          else
+            # Creates the tag on this commit when it doesn't exist yet (manual runs).
+            gh release create "$TAG" "$IPA" \
+              --target "$GITHUB_SHA" \
+              --title "Moozic $TAG" \
+              --generate-notes \
+              --notes "Unsigned build – install with AltStore, SideStore or Sideloadly, which re-sign it with your Apple ID."
+          fi
+
+      # AltStore source listing every release, attached to the latest release so its URL never changes:
+      # https://github.com/<owner>/<repo>/releases/latest/download/source.json
+      - name: Update AltStore source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" > releases.json
+          python3 scripts/altstore_source.py releases.json "$GITHUB_REPOSITORY" > source.json
+          LATEST=$(gh release view --json tagName --jq .tagName)
+          gh release upload "$LATEST" source.json --clobber

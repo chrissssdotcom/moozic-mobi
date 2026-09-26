@@ -45,6 +45,16 @@ Or run the **iOS** workflow manually from the Actions tab with a version such as
 
 The version comes from the tag and the build number from the CI run. The `.ipa` is **unsigned**, because iOS only installs signed apps. To put it on a phone, sideload it with [AltStore](https://altstore.io), [SideStore](https://sidestore.io) or [Sideloadly](https://sideloadly.io), which re-sign it with your Apple ID. Builds signed with a free Apple ID expire after 7 days. Shipping signed builds (ad-hoc or TestFlight) needs a paid Apple Developer account and its signing credentials stored as repository secrets.
 
+### AltStore source
+
+Each release also updates an [AltStore](https://altstore.io) source that lists every version, so AltStore or SideStore can install the app and notify you of updates. In AltStore, go to **Sources → +** and add:
+
+```
+https://github.com/chrissssdotcom/moozic-mobi/releases/latest/download/source.json
+```
+
+AltStore downloads the source and the `.ipa` without signing in, so this only works while the repository is public. `scripts/altstore_source.py` builds the source from the GitHub Releases.
+
 ## Setting up sign-in (OIDC)
 
 The server docs cover this in [Building a mobile app](https://github.com/chrissssdotcom/moozic/blob/main/docs/api/mobile-clients.md). In short:
