@@ -4,7 +4,8 @@ import UIKit
 /// with an in-memory cache and de-duplication of concurrent requests.
 actor ImageLoader {
     private let api: APIClient
-    private let cache = NSCache<NSString, UIImage>()
+    /// NSCache is thread-safe, so the synchronous `cached(_:)` lookup can skip the actor.
+    nonisolated(unsafe) private let cache = NSCache<NSString, UIImage>()
     private var inFlight: [String: Task<UIImage?, Error>] = [:]
     /// Paths that answered 404, so artwork-less albums aren't re-requested on every scroll.
     private var missing = Set<String>()

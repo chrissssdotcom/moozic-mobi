@@ -67,7 +67,7 @@ final class OIDCAuthenticator: NSObject, ASWebAuthenticationPresentationContextP
         return try await TokenClient.exchange(code: code, verifier: pkce.verifier, client: client, urlSession: urlSession)
     }
 
-    static func authorizationURL(client: OIDCClientConfig, pkce: PKCE, state: String, nonce: String) throws -> URL {
+    nonisolated static func authorizationURL(client: OIDCClientConfig, pkce: PKCE, state: String, nonce: String) throws -> URL {
         guard var components = URLComponents(url: client.authorizationEndpoint, resolvingAgainstBaseURL: false) else {
             throw OIDCError.invalidConfiguration("Invalid authorization endpoint.")
         }
@@ -85,7 +85,7 @@ final class OIDCAuthenticator: NSObject, ASWebAuthenticationPresentationContextP
         return url
     }
 
-    static func authorizationCode(from callback: URL, expectedState: String) throws -> String {
+    nonisolated static func authorizationCode(from callback: URL, expectedState: String) throws -> String {
         let items = URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems ?? []
         func value(_ name: String) -> String? { items.first { $0.name == name }?.value }
         if let error = value("error") {
