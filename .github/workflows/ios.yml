@@ -10,9 +10,11 @@ on:
         required: false
         type: string
 
+# Superseded pushes are cancelled, but manual (release) runs get their own group and are never
+# cancelled, so a push or re-run on the same branch can't kill a release half-way.
 concurrency:
-  group: ios-${{ github.ref }}
-  cancel-in-progress: true
+  group: ios-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   build-and-test:
